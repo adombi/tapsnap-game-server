@@ -1,0 +1,10 @@
+spring.application.name: meetup-game-server
+logging.level.io.rsocket: DEBUG
+server:
+  port: 8008
+spring:
+  rsocket:
+    server:
+      port: 7000
+      transport: websocket
+      mapping-path: /
