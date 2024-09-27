@@ -1,5 +1,8 @@
 spring.application.name: meetup-game-server
 logging.level.io.rsocket: DEBUG
+management.endpoints.web.exposure.include: "*"
+debug: true
+
 server:
   port: 8008
 spring:
