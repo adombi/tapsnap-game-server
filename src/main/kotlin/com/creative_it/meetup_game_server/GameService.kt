@@ -8,6 +8,9 @@ import reactor.core.publisher.Mono
 class GameService(
     var repository: MutableMap<String, Game> = mutableMapOf<String, Game>()
 ) {
+    init {
+        this.save(Game("Creative_IT")).block()
+    }
 
     fun get(id: String): Mono<Game> {
         return repository[id]?.let { Mono.just(it) } ?: Mono.empty()
