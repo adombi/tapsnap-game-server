@@ -1,15 +1,22 @@
 package com.creative_it.meetup_game_server
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class GameService(
     var repository: MutableMap<String, Game> = mutableMapOf<String, Game>()
 ) {
     init {
-        this.save(Game("Creative_IT")).block()
+        Flux.fromIterable<String>(listOf<String>("Creative_IT", "asdf"))
+            .map<Game> { Game(it) }
+            .flatMap<Game> { this.save(it).toFlux() }
+            .subscribe()
     }
 
     fun get(id: String): Mono<Game> {
@@ -33,6 +40,7 @@ class GameService(
             return Mono.error<Game>(RuntimeException("WTF?!"))
         }
         game.users.add(user)
+        logger.info { "GAME: $game" }
         return Mono.just(game)
     }
 }
