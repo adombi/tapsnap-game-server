@@ -1,9 +1,11 @@
 package com.creative_it.meetup_game_server
 
+import io.cloudevents.CloudEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Sinks
 import reactor.kotlin.core.publisher.toFlux
 
 private val logger = KotlinLogging.logger {}
@@ -42,5 +44,9 @@ class GameService(
         game.users.add(user)
         logger.info { "GAME: $game" }
         return Mono.just(game)
+    }
+
+    fun eventBus(gameId: String): Sinks.Many<CloudEvent> {
+        return repository[gameId]?.eventBus ?: throw RuntimeException("No Game is registered for game ID: $gameId")
     }
 }

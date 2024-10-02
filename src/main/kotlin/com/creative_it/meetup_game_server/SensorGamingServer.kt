@@ -6,11 +6,14 @@ import io.cloudevents.core.CloudEventUtils.mapData
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.cloudevents.jackson.PojoCloudEventDataMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import reactor.core.publisher.Sinks
+import reactor.core.scheduler.Schedulers
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,7 +29,7 @@ class SensorGamingServer(
             .flatMap map@{ e ->
                 when (e.type) {
                     "com.creative_it.meetup_game_server.JoinRequest" -> {
-                        return@map Mono.just(mapToType<JoinRequest>(e))
+                        return@map Flux.just(mapToType<JoinRequest>(e))
                             .map<User> { joinRequest -> User(joinRequest.playerName) }
                             .flatMap<User> { user -> gameService.addUserToGame(gameId, user).map{ g -> user } }
                             .map<CloudEvent> { user ->
@@ -36,23 +39,28 @@ class SensorGamingServer(
                                     .build()
                             }
                     }
+                    "com.creative_it.meetup_game_server.StartGame" -> {
+                        return@map Flux.interval(1.seconds.toJavaDuration(), Schedulers.single())
+                            .take(3)
+                            .map<CloudEvent> { tick ->
+                                CloudEventBuilder(e)
+                                    .withType("CountDown")
+                                    .withSubject(objectMapper.writeValueAsString(tick))
+                                    .build()
+                            }
+                    }
                 }
-                return@map Mono.just(CloudEventBuilder(e)
+                return@map Flux.just(CloudEventBuilder(e)
                     .withType("wtf")
                     .withSubject("DEFAULT")
                     .build())
             }
-//            .filter {s -> s.name == "Start"}
-//            .withLatestFrom<Long, EventWithServerConfig>(Flux.interval(1.seconds.toJavaDuration()))
-//            { a: CloudEvent, b: Long -> EventWithServerConfig(a, b) }
+            .flatMap<CloudEvent> { e ->
+                val eventBus = gameService.eventBus(gameId)
+                eventBus.emitNext(e, Sinks.EmitFailureHandler.FAIL_FAST)
+                eventBus.asFlux()
+            }
             .log()
-//            .takeUntil {event -> event.tick == 2L}
-//            .map {user -> CloudEventBuilder()
-//                .withId(UUID.randomUUID().toString())
-//                .withSource(URI.create("https://snaptap.adombi.dev"))
-//                .withType("wtf")
-//                .withSubject("$gameId $user.name")
-//                .build() }
     }
 
     fun <T> mapToType(e: CloudEvent): T {
