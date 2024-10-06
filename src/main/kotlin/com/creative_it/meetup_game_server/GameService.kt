@@ -39,9 +39,11 @@ class GameService(
     fun addUserToGame(gameId: String, user: User): Mono<Game> {
         val game = repository[gameId]
         if (game == null) {
-            return Mono.error<Game>(RuntimeException("WTF?!"))
+            return Mono.error(RuntimeException("No such game of \"$gameId\""))
         }
-        game.users.add(user)
+        if (!game.users.contains(user)) {
+            game.users.add(user)
+        }
         logger.info { "GAME: $game" }
         return Mono.just(game)
     }

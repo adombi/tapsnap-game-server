@@ -1,6 +1,7 @@
 package com.creative_it.meetup_game_server
 
 import lombok.RequiredArgsConstructor
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/games")
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RequiredArgsConstructor
 class GameController(
     val gameService: GameService
