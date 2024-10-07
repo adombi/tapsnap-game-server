@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 @Controller
 class SensorGamingServer(
     val objectMapper: ObjectMapper,
-    val gameService: GameService
+    val gameService: GameService,
 ) {
 
     @MessageMapping("sensor-gaming/{gameId}")
@@ -28,14 +28,21 @@ class SensorGamingServer(
         return rMessage
             .flatMap map@{ e ->
                 when (e.type) {
+                    "com.creative_it.meetup_game_server.Connect" -> {
+                        return@map Flux.just<CloudEvent>(
+                            CloudEventBuilder(e)
+                                .withType("Connected")
+                                .build()
+                        )
+                    }
                     "com.creative_it.meetup_game_server.JoinRequest" -> {
                         return@map Flux.just(mapToType<JoinRequest>(e))
                             .map<User> { joinRequest -> User(joinRequest.playerName) }
-                            .flatMap<User> { user -> gameService.addUserToGame(gameId, user).map{ g -> user } }
-                            .map<CloudEvent> { user ->
+                            .flatMap<Game> { user -> gameService.addUserToGame(gameId, user) }
+                            .map<CloudEvent> { game ->
                                 CloudEventBuilder(e)
                                     .withType("Joined")
-                                    .withSubject(objectMapper.writeValueAsString(user))
+                                    .withData(objectMapper.writeValueAsBytes(game))
                                     .build()
                             }
                     }
@@ -45,7 +52,7 @@ class SensorGamingServer(
                             .map<CloudEvent> { tick ->
                                 CloudEventBuilder(e)
                                     .withType("CountDown")
-                                    .withSubject(objectMapper.writeValueAsString(tick))
+                                    .withData(objectMapper.writeValueAsBytes(tick))
                                     .build()
                             }
                     }
@@ -55,7 +62,7 @@ class SensorGamingServer(
                     .withSubject("DEFAULT")
                     .build())
             }
-            .flatMap<CloudEvent> { e ->
+            .flatMap { e ->
                 val eventBus = gameService.eventBus(gameId)
                 eventBus.emitNext(e, Sinks.EmitFailureHandler.FAIL_FAST)
                 eventBus.asFlux()
