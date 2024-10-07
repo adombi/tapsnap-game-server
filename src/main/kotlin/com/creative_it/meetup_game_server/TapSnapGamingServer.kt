@@ -72,6 +72,12 @@ class TapSnapGamingServer(
                             }
                         )
                     }
+                    "com.creative_it.meetup_game_server.React" -> {
+                        return@map Flux.just(mapToType<React>(e))
+                            .flatMap { react -> gameService.react(gameId, react) }
+                            .map { CloudEventBuilder(e).build() }
+                            .filter { false }
+                    }
                 }
                 return@map Flux.just(CloudEventBuilder(e)
                     .withType("wtf")

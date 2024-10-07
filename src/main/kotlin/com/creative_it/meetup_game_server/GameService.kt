@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,6 +45,23 @@ class GameService(
         } else {
             return Mono.empty()
         }
+    }
+
+    fun react(gameId: String, react: React): Mono<Game> {
+        val game = repository[gameId]
+        if (game != null) {
+            val reactions = game.results[User(react.playerName)]
+            if (reactions == null) {
+                game.results[User(react.playerName)] = mutableListOf(react.respondTimeMillis)
+            } else {
+                reactions.add(react.respondTimeMillis)
+            }
+        }
+        return game?.toMono() ?: Mono.empty()
+    }
+
+    fun results(gameId: String): Mono<Map<User, List<Int>>> {
+        return repository[gameId]?.results.toMono()
     }
 
     fun addUserToGame(gameId: String, user: User): Mono<Game> {
