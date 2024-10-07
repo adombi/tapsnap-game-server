@@ -12,12 +12,12 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class GameService(
-    var repository: MutableMap<String, Game> = mutableMapOf<String, Game>()
+    private var repository: MutableMap<String, Game> = mutableMapOf()
 ) {
     init {
-        Flux.fromIterable<String>(listOf<String>("Creative_IT", "asdf"))
-            .map<Game> { Game(it) }
-            .flatMap<Game> { this.save(it).toFlux() }
+        Flux.fromIterable(listOf("Creative_IT", "asdf"))
+            .map { Game(it) }
+            .flatMap { this.save(it).toFlux() }
             .subscribe()
     }
 
@@ -26,7 +26,7 @@ class GameService(
     }
 
     fun getAll(): Flux<Game> {
-        return Flux.fromIterable<Game>(repository.values)
+        return Flux.fromIterable(repository.values)
     }
 
     fun save(game: Game): Mono<Game> {
@@ -36,11 +36,19 @@ class GameService(
         return Mono.just(game)
     }
 
+    fun reset(gameId: String): Mono<Game> {
+        val game = repository[gameId]
+        if (game != null) {
+            game.users.removeIf { true }
+            return Mono.just(game)
+        } else {
+            return Mono.empty()
+        }
+    }
+
     fun addUserToGame(gameId: String, user: User): Mono<Game> {
         val game = repository[gameId]
-        if (game == null) {
-            return Mono.error(RuntimeException("No such game of \"$gameId\""))
-        }
+            ?: return Mono.error(RuntimeException("No such game of \"$gameId\""))
         if (!game.users.contains(user)) {
             game.users.add(user)
         }
