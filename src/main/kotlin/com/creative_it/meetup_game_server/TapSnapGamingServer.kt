@@ -18,12 +18,12 @@ import reactor.core.scheduler.Schedulers
 private val logger = KotlinLogging.logger {}
 
 @Controller
-class SensorGamingServer(
+class TapSnapGamingServer(
     val objectMapper: ObjectMapper,
     val gameService: GameService,
 ) {
 
-    @MessageMapping("sensor-gaming/{gameId}")
+    @MessageMapping("tap-snap/{gameId}")
     fun game(@DestinationVariable gameId: String, rMessage: Flux<CloudEvent>): Flux<CloudEvent>  {
         return rMessage
             .flatMap map@{ e ->
