@@ -13,7 +13,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
-import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toFlux
 
 private val logger = KotlinLogging.logger {}
 
@@ -47,7 +47,7 @@ class TapSnapGamingServer(
                             }
                     }
                     "com.creative_it.meetup_game_server.StartGame" -> {
-                        return@map Flux.interval(1.seconds.toJavaDuration(), Schedulers.single())
+                        return@map Flux.zip(listOf(3, 2, 1).toFlux(), Flux.interval(1.seconds.toJavaDuration())) { a, _ -> a}
                             .take(3)
                             .map<CloudEvent> { tick ->
                                 CloudEventBuilder(e)
