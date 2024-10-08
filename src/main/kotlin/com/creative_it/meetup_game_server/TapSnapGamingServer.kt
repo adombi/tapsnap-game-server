@@ -50,13 +50,7 @@ class TapSnapGamingServer(
                     }
                     "com.creative_it.meetup_game_server.StartGame" -> {
                         return@map Flux.concat(
-                            Flux.concat(
-                                Flux.zip(
-                                    listOf(3, 2, 1).toFlux(),
-                                    Flux.interval(1.seconds.toJavaDuration())
-                                ) { a, _ -> a}
-                                .take(3)
-                            )
+                            countDownFrom3()
                             .map<CloudEvent> { tick ->
                                 CloudEventBuilder(e)
                                     .withType("CountDown")
@@ -91,6 +85,14 @@ class TapSnapGamingServer(
             }
             .log()
     }
+
+    private fun countDownFrom3() = Flux.concat(
+        Flux.zip(
+            listOf(3, 2, 1).toFlux(),
+            Flux.interval(1.seconds.toJavaDuration())
+        ) { a, _ -> a }
+            .take(3)
+    )
 
     private fun randomInterval(data: Int) =
         Flux.zip(
