@@ -35,7 +35,6 @@ class GameController(
     }
 
     @GetMapping("/{id}/reset")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun reset(@PathVariable id: String): Mono<Game> {
         return gameService.reset(id)
     }

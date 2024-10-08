@@ -41,6 +41,7 @@ class GameService(
         val game = repository[gameId]
         if (game != null) {
             game.users.removeIf { true }
+            game.results.clear()
             return Mono.just(game)
         } else {
             return Mono.empty()
