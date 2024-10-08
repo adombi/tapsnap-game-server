@@ -1,1 +1,1 @@
-rootProject.name = "meetup-game-server"
+rootProject.name = "game-server"

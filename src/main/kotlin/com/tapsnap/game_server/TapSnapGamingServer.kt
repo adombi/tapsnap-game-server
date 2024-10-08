@@ -1,4 +1,4 @@
-package com.creative_it.meetup_game_server
+package com.tapsnap.game_server
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.cloudevents.CloudEvent
@@ -30,14 +30,14 @@ class TapSnapGamingServer(
         return rMessage
             .flatMap map@{ e ->
                 when (e.type) {
-                    "com.creative_it.meetup_game_server.Connect" -> {
+                    "com.tapsnap.game_server.Connect" -> {
                         return@map Flux.just<CloudEvent>(
                             CloudEventBuilder(e)
                                 .withType("Connected")
                                 .build()
                         )
                     }
-                    "com.creative_it.meetup_game_server.JoinRequest" -> {
+                    "com.tapsnap.game_server.JoinRequest" -> {
                         return@map Flux.just(mapToType<JoinRequest>(e))
                             .map<User> { joinRequest -> User(joinRequest.playerName) }
                             .flatMap<Game> { user -> gameService.addUserToGame(gameId, user) }
@@ -48,7 +48,7 @@ class TapSnapGamingServer(
                                     .build()
                             }
                     }
-                    "com.creative_it.meetup_game_server.StartGame" -> {
+                    "com.tapsnap.game_server.StartGame" -> {
                         return@map Flux.concat(
                             countDownFrom3()
                             .map<CloudEvent> { tick ->
@@ -66,7 +66,7 @@ class TapSnapGamingServer(
                             }
                         )
                     }
-                    "com.creative_it.meetup_game_server.React" -> {
+                    "com.tapsnap.game_server.React" -> {
                         return@map Flux.just(mapToType<React>(e))
                             .flatMap { react -> gameService.react(gameId, react) }
                             .map { CloudEventBuilder(e).build() }

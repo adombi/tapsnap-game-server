@@ -1,4 +1,4 @@
-package com.creative_it.meetup_game_server
+package com.tapsnap.game_server
 
 import lombok.RequiredArgsConstructor
 import org.springframework.http.HttpStatus

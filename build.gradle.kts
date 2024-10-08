@@ -7,7 +7,7 @@ plugins {
 	id("org.graalvm.buildtools.native") version "0.10.2"
 }
 
-group = "com.creative_it"
+group = "com.tapsnap"
 version = "0.0.1-SNAPSHOT"
 
 java {

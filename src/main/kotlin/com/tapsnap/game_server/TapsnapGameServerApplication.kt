@@ -1,11 +1,11 @@
-package com.creative_it.meetup_game_server
+package com.tapsnap.game_server
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class MeetupGameServerApplication
+class TapsnapGameServerApplication
 
 fun main(args: Array<String>) {
-	runApplication<MeetupGameServerApplication>(*args)
+	runApplication<TapsnapGameServerApplication>(*args)
 }

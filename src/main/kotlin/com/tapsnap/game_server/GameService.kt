@@ -1,4 +1,4 @@
-package com.creative_it.meetup_game_server
+package com.tapsnap.game_server
 
 import io.cloudevents.CloudEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,7 +16,7 @@ class GameService(
     private var repository: MutableMap<String, Game> = mutableMapOf()
 ) {
     init {
-        Flux.fromIterable(listOf("Creative_IT", "asdf"))
+        Flux.fromIterable(listOf("Creative_it"))
             .map { Game(it) }
             .flatMap { this.save(it).toFlux() }
             .subscribe()

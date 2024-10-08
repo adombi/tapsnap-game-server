@@ -1,4 +1,4 @@
-package com.creative_it.meetup_game_server
+package com.tapsnap.game_server
 
 import io.cloudevents.spring.codec.CloudEventDecoder
 import io.cloudevents.spring.codec.CloudEventEncoder

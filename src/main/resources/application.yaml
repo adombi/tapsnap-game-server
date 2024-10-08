@@ -1,4 +1,4 @@
-spring.application.name: meetup-game-server
+spring.application.name: tapsnap-game-server
 logging.level.io.rsocket: DEBUG
 management.endpoints.web.exposure.include: "*"
 debug: true
