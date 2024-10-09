@@ -14,6 +14,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
@@ -40,30 +41,42 @@ class TapSnapGamingServer(
                     }
                     "com.tapsnap.game_server.JoinRequest" -> {
                         return@map Flux.just(mapToType<JoinRequest>(e))
-                            .map<User> { joinRequest -> User(joinRequest.playerName) }
-                            .flatMap<Game> { user -> gameService.addUserToGame(gameId, user) }
-                            .map<CloudEvent> { game ->
+                            .flatMap<Game> { gameService.addUserToGame(gameId, it.playerName) }
+                            .map<CloudEvent> {
                                 CloudEventBuilder(e)
                                     .withType("Joined")
-                                    .withData(objectMapper.writeValueAsBytes(game))
+                                    .withData(objectMapper.writeValueAsBytes(it))
                                     .build()
                             }
                     }
                     "com.tapsnap.game_server.StartGame" -> {
                         return@map Flux.concat(
                             countDownFrom3()
-                                .map<CloudEvent> { tick ->
+                                .map<CloudEvent> {
                                     CloudEventBuilder(e)
                                         .withType("CountDown")
-                                        .withData(objectMapper.writeValueAsBytes(tick))
+                                        .withData(objectMapper.writeValueAsBytes(it))
                                         .build()
                             },
                             Flux.concat(randomInterval(1337), randomInterval(8008), randomInterval(987654))
-                                .map<CloudEvent> { tick ->
+                                .map<CloudEvent> {
                                     CloudEventBuilder(e)
                                         .withType("InProgress")
-                                        .withData(objectMapper.writeValueAsBytes(tick))
+                                        .withData(objectMapper.writeValueAsBytes(it))
                                         .build()
+                            },
+                            CloudEventBuilder(e)
+                                .withType("Collecting Results")
+                                .build()
+                                .toMono()
+                                .delayElement(5.seconds.toJavaDuration()),
+                            Mono.defer {
+                                gameService.results(gameId)
+                                    .map { CloudEventBuilder(e)
+                                        .withType("Results")
+                                        .withData(objectMapper.writeValueAsBytes(it))
+                                        .build()
+                                    }
                             }
                         )
                     }

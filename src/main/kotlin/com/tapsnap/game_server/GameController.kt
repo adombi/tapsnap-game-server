@@ -40,12 +40,12 @@ class GameController(
     }
 
     @GetMapping("/{id}/results")
-    fun results(@PathVariable id: String): Mono<Map<User, List<Int>>> {
+    fun results(@PathVariable id: String): Mono<Map<String, List<Int>>> {
         return gameService.results(id)
     }
 
     @PostMapping("/{gameId}")
-    fun addUserToGame(@PathVariable gameId: String, @RequestBody user: User): Mono<Game> {
+    fun addUserToGame(@PathVariable gameId: String, @RequestBody user: String): Mono<Game> {
         return gameService.addUserToGame(gameId, user)
     }
 }

@@ -51,9 +51,9 @@ class GameService(
     fun react(gameId: String, react: React): Mono<Game> {
         val game = repository[gameId]
         if (game != null) {
-            val reactions = game.results[User(react.playerName)]
+            val reactions = game.results[react.playerName]
             if (reactions == null) {
-                game.results[User(react.playerName)] = mutableListOf(react.respondTimeMillis)
+                game.results[react.playerName] = mutableListOf(react.respondTimeMillis)
             } else {
                 reactions.add(react.respondTimeMillis)
             }
@@ -61,11 +61,11 @@ class GameService(
         return game?.toMono() ?: Mono.empty()
     }
 
-    fun results(gameId: String): Mono<Map<User, List<Int>>> {
+    fun results(gameId: String): Mono<Map<String, List<Int>>> {
         return repository[gameId]?.results.toMono()
     }
 
-    fun addUserToGame(gameId: String, user: User): Mono<Game> {
+    fun addUserToGame(gameId: String, user: String): Mono<Game> {
         val game = repository[gameId]
             ?: return Mono.error(RuntimeException("No such game of \"$gameId\""))
         if (!game.users.contains(user)) {
