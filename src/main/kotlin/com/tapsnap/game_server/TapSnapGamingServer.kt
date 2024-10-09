@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 
 private val logger = KotlinLogging.logger {}
 
@@ -51,18 +52,18 @@ class TapSnapGamingServer(
                     "com.tapsnap.game_server.StartGame" -> {
                         return@map Flux.concat(
                             countDownFrom3()
-                            .map<CloudEvent> { tick ->
-                                CloudEventBuilder(e)
-                                    .withType("CountDown")
-                                    .withData(objectMapper.writeValueAsBytes(tick))
-                                    .build()
+                                .map<CloudEvent> { tick ->
+                                    CloudEventBuilder(e)
+                                        .withType("CountDown")
+                                        .withData(objectMapper.writeValueAsBytes(tick))
+                                        .build()
                             },
                             Flux.concat(randomInterval(1337), randomInterval(8008), randomInterval(987654))
-                            .map<CloudEvent> { tick ->
-                                CloudEventBuilder(e)
-                                    .withType("InProgress")
-                                    .withData(objectMapper.writeValueAsBytes(tick))
-                                    .build()
+                                .map<CloudEvent> { tick ->
+                                    CloudEventBuilder(e)
+                                        .withType("InProgress")
+                                        .withData(objectMapper.writeValueAsBytes(tick))
+                                        .build()
                             }
                         )
                     }
@@ -86,19 +87,9 @@ class TapSnapGamingServer(
             .log()
     }
 
-    private fun countDownFrom3() = Flux.concat(
-        Flux.zip(
-            listOf(3, 2, 1).toFlux(),
-            Flux.interval(1.seconds.toJavaDuration())
-        ) { a, _ -> a }
-            .take(3)
-    )
+    private fun countDownFrom3() = listOf(3, 2, 1).toFlux().delayElements(1.seconds.toJavaDuration()).take(3)
 
-    private fun randomInterval(data: Int) =
-        Flux.zip(
-            Flux.just(data),
-            Flux.interval(Random.nextInt(1000, 5001).milliseconds.toJavaDuration())
-        ) { a, _ -> a }.take(1)
+    private fun randomInterval(data: Int) = data.toMono().delayElement(Random.nextInt(1000, 5001).milliseconds.toJavaDuration())
 
     fun <T> mapToType(e: CloudEvent): T {
         return mapData(e, PojoCloudEventDataMapper.from(
