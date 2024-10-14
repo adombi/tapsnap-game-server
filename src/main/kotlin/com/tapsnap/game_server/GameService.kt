@@ -70,6 +70,7 @@ class GameService(
             ?: return Mono.error(RuntimeException("No such game of \"$gameId\""))
         if (!game.users.contains(user)) {
             game.users.add(user)
+            game.results[user] = mutableListOf()
         }
         logger.info { "GAME: $game" }
         return Mono.just(game)
@@ -77,5 +78,9 @@ class GameService(
 
     fun eventBus(gameId: String): Sinks.Many<CloudEvent> {
         return repository[gameId]?.eventBus ?: throw RuntimeException("No Game is registered for game ID: $gameId")
+    }
+
+    fun dashboardEventBus(gameId: String): Sinks.Many<CloudEvent> {
+        return repository[gameId]?.dashboardEventBus ?: throw RuntimeException("No Game is registered for game ID: $gameId")
     }
 }

@@ -43,6 +43,9 @@ class TapSnapGamingServer(
                         return@map Flux.just(mapToType<JoinRequest>(e))
                             .flatMap<Game> { gameService.addUserToGame(gameId, it.playerName) }
                             .map<CloudEvent> {
+                                gameService.dashboardEventBus(gameId)
+                                    .emitNext(CloudEventBuilder(e).withType("RefreshResults").build(),
+                                        Sinks.EmitFailureHandler.FAIL_FAST)
                                 CloudEventBuilder(e)
                                     .withType("Joined")
                                     .withData(objectMapper.writeValueAsBytes(it))
@@ -83,7 +86,12 @@ class TapSnapGamingServer(
                     "com.tapsnap.game_server.React" -> {
                         return@map Flux.just(mapToType<React>(e))
                             .flatMap { react -> gameService.react(gameId, react) }
-                            .map { CloudEventBuilder(e).build() }
+                            .map {
+                                gameService.dashboardEventBus(gameId)
+                                    .emitNext(CloudEventBuilder(e).withType("RefreshResults").build(),
+                                        Sinks.EmitFailureHandler.FAIL_FAST)
+                                CloudEventBuilder(e).build()
+                            }
                             .filter { false }
                     }
                 }
@@ -97,6 +105,24 @@ class TapSnapGamingServer(
                 eventBus.emitNext(e, Sinks.EmitFailureHandler.FAIL_FAST)
                 eventBus.asFlux()
             }
+            .distinct()
+            .log()
+    }
+
+    @MessageMapping("tap-snap/{gameId}/dashboard")
+    fun game(@DestinationVariable gameId: String): Flux<CloudEvent>  {
+        return gameService.dashboardEventBus(gameId)
+            .asFlux()
+            .filter { it.type.equals("RefreshResults") }
+            .flatMap { event ->
+                gameService.get(gameId)
+                    .map { CloudEventBuilder(event)
+                        .withType("UpdatedResults")
+                        .withData(objectMapper.writeValueAsBytes(it))
+                        .build()
+                    }
+            }
+            .distinct()
             .log()
     }
 
