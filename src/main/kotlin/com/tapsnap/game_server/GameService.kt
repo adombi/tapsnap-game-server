@@ -26,7 +26,7 @@ class GameService(
     }
 
     fun get(id: String): Mono<Game> {
-        return repository[id]?.let { Mono.just(it) } ?: Mono.empty()
+        return repository[id].toMono()
     }
 
     fun getAll(): Flux<Game> {
@@ -45,10 +45,8 @@ class GameService(
         if (game != null) {
             game.users.removeIf { true }
             game.results.clear()
-            return Mono.just(game)
-        } else {
-            return Mono.empty()
         }
+        return game.toMono()
     }
 
     fun restart(gameId: String): Mono<Game> {
@@ -70,10 +68,8 @@ class GameService(
                     .withSource(URI.create("https://snaptap.adombi.dev"))
                     .withType("RefreshResults")
                     .build(), Sinks.EmitFailureHandler.FAIL_FAST)
-            return Mono.just(game)
-        } else {
-            return Mono.empty()
         }
+        return game.toMono()
     }
 
     fun react(gameId: String, react: React): Mono<Game> {
@@ -86,7 +82,7 @@ class GameService(
                 reactions.add(react.respondTimeMillis)
             }
         }
-        return game?.toMono() ?: Mono.empty()
+        return game.toMono()
     }
 
     fun results(gameId: String): Mono<Map<String, List<Int>>> {
@@ -100,7 +96,7 @@ class GameService(
             game.users.add(user)
             game.results[user] = mutableListOf()
         }
-        logger.info { "GAME: $game" }
+        logger.debug { "GAME: $game" }
         return Mono.just(game)
     }
 

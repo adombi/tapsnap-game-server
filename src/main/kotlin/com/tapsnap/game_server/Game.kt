@@ -8,7 +8,7 @@ data class Game(val id: String,
                 val users: MutableList<String> = mutableListOf(),
                 val results: MutableMap<String, MutableList<Int>> = mutableMapOf(),
                 @JsonIgnore val eventBus: Sinks.Many<CloudEvent> = Sinks.unsafe().many().multicast().directBestEffort(),
-                @JsonIgnore val dashboardEventBus: Sinks.Many<CloudEvent> = Sinks.unsafe().many().replay().latest())
+                @JsonIgnore val dashboardEventBus: Sinks.Many<CloudEvent> = Sinks.unsafe().many().replay().limit(3))
 
 //data class User(val name: String)
 //data class User(val name: String, val ready: Boolean)
