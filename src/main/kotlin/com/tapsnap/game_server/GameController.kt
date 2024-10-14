@@ -37,6 +37,11 @@ class GameController(
         return gameService.reset(id)
     }
 
+    @GetMapping("/{id}/restart")
+    fun restart(@PathVariable id: String): Mono<Game> {
+        return gameService.restart(id)
+    }
+
     @GetMapping("/{id}/results")
     fun results(@PathVariable id: String): Mono<Map<String, List<Int>>> {
         return gameService.results(id)

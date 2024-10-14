@@ -1,7 +1,10 @@
 package com.tapsnap.game_server
 
 import io.cloudevents.CloudEvent
+import io.cloudevents.core.v1.CloudEventBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
+import java.util.UUID
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -42,6 +45,31 @@ class GameService(
         if (game != null) {
             game.users.removeIf { true }
             game.results.clear()
+            return Mono.just(game)
+        } else {
+            return Mono.empty()
+        }
+    }
+
+    fun restart(gameId: String): Mono<Game> {
+        val game = repository[gameId]
+        if (game != null) {
+            val eventId = UUID.randomUUID().toString()
+            game.results.forEach {
+                result -> result.value.clear()
+            }
+            game.eventBus.emitNext(
+                CloudEventBuilder()
+                    .withId(eventId)
+                    .withSource(URI.create("https://snaptap.adombi.dev"))
+                    .withType("Restarted")
+                    .build(), Sinks.EmitFailureHandler.FAIL_FAST)
+            game.dashboardEventBus.emitNext(
+                CloudEventBuilder()
+                    .withId(eventId)
+                    .withSource(URI.create("https://snaptap.adombi.dev"))
+                    .withType("RefreshResults")
+                    .build(), Sinks.EmitFailureHandler.FAIL_FAST)
             return Mono.just(game)
         } else {
             return Mono.empty()

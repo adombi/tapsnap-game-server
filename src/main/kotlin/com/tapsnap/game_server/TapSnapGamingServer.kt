@@ -106,7 +106,7 @@ class TapSnapGamingServer(
                 eventBus.asFlux()
             }
             .distinct()
-            .log()
+            .log("game.eventBus.")
     }
 
     @MessageMapping("tap-snap/{gameId}/dashboard")
@@ -123,7 +123,7 @@ class TapSnapGamingServer(
                     }
             }
             .distinct()
-            .log()
+            .log("dashboard.eventBus.")
     }
 
     private fun countDownFrom3() = listOf(3, 2, 1).toFlux().delayElements(1.seconds.toJavaDuration()).take(3)
