@@ -61,7 +61,7 @@ class TapSnapGamingServer(
                                         .withData(objectMapper.writeValueAsBytes(it))
                                         .build()
                             },
-                            Flux.concat(randomInterval(1337), randomInterval(8008), randomInterval(987654))
+                            Flux.concat(randomInterval(1), randomInterval(2), randomInterval(3))
                                 .map<CloudEvent> {
                                     CloudEventBuilder(e)
                                         .withType("InProgress")
@@ -126,7 +126,7 @@ class TapSnapGamingServer(
             .log("dashboard.eventBus.")
     }
 
-    private fun countDownFrom3() = listOf(3, 2, 1).toFlux().delayElements(1.seconds.toJavaDuration()).take(3)
+    private fun countDownFrom3() = listOf("3", "2", "1", "READY").toFlux().delayElements(1.seconds.toJavaDuration()).take(4)
 
     private fun randomInterval(data: Int) = data.toMono().delayElement(Random.nextInt(1000, 5001).milliseconds.toJavaDuration())
 
