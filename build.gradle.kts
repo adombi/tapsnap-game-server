@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
 plugins {
 	id("java")
 	kotlin("jvm") version "2.0.20"
@@ -44,6 +46,10 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
+	environment.put("BP_JVM_VERSION", "21")
 }
 
 kotlin {

@@ -1,7 +1,16 @@
 spring.application.name: tapsnap-game-server
-logging.level.io.rsocket: DEBUG
-management.endpoints.web.exposure.include: "*"
-debug: true
+#logging.level.io.rsocket: DEBUG
+#debug: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - app
+          - health
+          - info
+          - prometheus
+          - metrics
 
 server:
   port: 8008
