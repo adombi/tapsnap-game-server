@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/games")
-@CrossOrigin(origins = ["http://localhost:3000"])
+@CrossOrigin(origins = ["http://localhost:3000", "https://tapsnap.akosdombi.dev"])
 @RequiredArgsConstructor
 class GameController(
     val gameService: GameService
